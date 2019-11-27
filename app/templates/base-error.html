@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xml:lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global-lite.css') }}">
+    <title>{% block title %}{{ e.code | default('错误') }}{% endblock %} - FF.PyAdmin</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <script src="{{ url_for('static', filename='layui/layui.all.js') }}?v2.5.5"></script>
+    <script src="{{ url_for('static', filename='js/jq.global.js') }}"></script>
+    <style>
+        html, body, table {
+            width: 100%;
+            height: 100%;
+            -webkit-text-size-adjust: none;
+            -ms-text-size-adjust: none;
+            background: #f0f2f5 url("{{ url_for('static', filename='images/bg.svg') }}") no-repeat center center;
+            background-size: 100%;
+            overflow: hidden;
+            border: none;
+        }
+
+        table td {
+            vertical-align: middle;
+        }
+
+        .pagemsg {
+            position: relative;
+            text-align: center;
+            line-height: 1.8;
+            font-size: 14px;
+            text-shadow: 0 0 2px rgba(0, 0, 0, .05);
+            font-weight: 600
+        }
+
+        .pagemsg img {
+            box-shadow: 0 0 6px rgba(0, 0, 0, .15);
+            display: inline-block
+        }
+
+        .pagemsg p {
+            padding-bottom: 12px
+        }
+    </style>
+</head>
+<body id="msg">
+<table>
+    <tbody>
+    <tr>
+        <td>
+            <div class="pagemsg">
+                <p><a href="/"><img src="{{ url_for('static', filename='images/xunyou.png') }}" alt="xunyou"></a></p>
+                <p class="c-default">（{% block content %}{{ e.description | default('访问错误, 请重试') }}{% endblock %}）</p>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

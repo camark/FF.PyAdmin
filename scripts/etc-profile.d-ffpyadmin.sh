@@ -1,0 +1,5 @@
+#!/bin/bash
+# source /etc/profile.d/ffpyadmin.sh
+export FF_PyAdmin=production
+export PYADMIN_OAUTH_SECRET=f417f679194e330c3a40bee704d404ffe9d348cc7326e654c6d803a33bd6836fdc38c210
+export PYADMIN_DBPASS=94ac4f753bf6880c91e0c540689b81fd

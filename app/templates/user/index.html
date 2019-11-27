@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block title %}用户管理{% endblock %}
+{% block body %}
+    <div class="panel">
+        <div class="panel-title">
+            <h3 class="fleft">
+                用户和权限管理
+                <span class="layui-badge-rim c-green font-iosevka">
+                    用户管理, 用户权限分配
+                </span>
+            </h3>
+            <div class="fright">
+                <form id="frm_search" class="layui-form" lay-filter="frm_search">
+                    <div class="layui-inline">
+                        <label>工号：</label>
+                        <div class="layui-input-inline">
+                            <input name="job_number" type="text" class="layui-input txt-focus" value=""
+                                   placeholder="输入工号查询">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label>姓名：</label>
+                        <div class="layui-input-inline">
+                            <input name="realname" type="text" class="layui-input txt-focus" value=""
+                                   placeholder="输入姓名查询">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div>
+                            <button class="layui-btn btn-default" lay-submit="" lay-filter="btn_search"
+                                    id="btn_search" type="submit">
+                                <i class="ficon icon-search_list"></i>用户查询
+                            </button>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div>
+                            <a href="{{ url_for('role.role_index') }}" class="layui-btn btn-danger"><i
+                                    class="ficon icon-kehu"></i>权限组管理
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel-box pl25">
+            <div id="grid_main">
+                <table id="tbl_main" lay-filter="tbl_main"></table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <div id="div_authorize" class="layer-pop">
+        <form class="layui-form layui-form-pane" lay-filter="frm_authorize" id="frm_authorize">
+            <div class="layui-form-item">
+                <label class="layui-form-label">权限：</label>
+                <div class="layui-input-block">
+                    <select id="f_role" name="role" title="" lay-filter="f_role" lay-verify="required"
+                            lay-vertype="tips" data-fjson="{{ url_for('role.role_data') }}"
+                            data-fvalue="" data-fx="role"></select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">工号：</label>
+                <div class="layui-input-block">
+                    <input name="job_number" type="text" class="layui-input" value=""
+                           readonly="readonly" lay-verify="required" lay-vertype="tips">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名：</label>
+                <div class="layui-input-block">
+                    <input name="realname" type="text" class="layui-input" value=""
+                           readonly="readonly" lay-verify="required" lay-vertype="tips">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">手机：</label>
+                <div class="layui-input-block">
+                    <input name="mobile" type="text" class="layui-input" value=""
+                           lay-verify="required" lay-vertype="tips">
+                </div>
+            </div>
+            <div class="center">
+                <button class="layui-btn layui-btn-sm btn-primary" type="submit" lay-submit
+                        lay-filter="btn_authorize_save">
+                    <i class="ficon icon-gou"></i>保 存
+                </button>
+                <button class="layui-btn layui-btn-sm btn-warning" id="btn_authorize_close" type="button">
+                    <i class="ficon icon-cha"></i>取 消
+                </button>
+            </div>
+        </form>
+    </div>
+    <script type="text/html" id="bar_action">
+        <div class="layui-btn-group">
+            {% if is_can('user.user_authorize') %}
+                <a class="layui-btn layui-btn-sm btn-primary" lay-event="authorize">授权</a>
+                <a class="layui-btn layui-btn-sm btn-brown" lay-event="deny">禁用</a>
+            {% endif %}
+        </div>
+    </script>
+    <script>
+        $(function () {
+            const BTN_SEARCH = $('#btn_search');
+            let FN = {
+                // 主表
+                tb_main: function (d) {
+                    let height = $('#grid_main').height();
+                    height < 222 && (height = 345);
+                    let cfg = {
+                        elem: '#tbl_main',
+                        even: true,
+                        height: height,
+                        page: true,
+                        dataPage: true,
+                        limit: 60,
+                        loading: true,
+                        cols: [[
+                            {type: 'numbers'},
+                            {
+                                field: 'job_number', title: '工号', width: 100, sort: true, templet: function (d) {
+                                    let s = '000' + d.job_number;
+                                    return s.substr(s.length - 4);
+                                }
+                            },
+                            {field: 'realname', title: '用户名', sort: true},
+                            {field: 'role', title: '权限', sort: true},
+                            {
+                                field: 'status', title: '状态', templet: function (d) {
+                                    return d.status === 1
+                                        ? '<i class="ficon icon-roundcheck text-success"></i>'
+                                        : '<i class="ficon icon-roundclose text-brown"></i>'
+                                }
+                            },
+                            {title: '操作', width: 140, align: 'center', fixed: 'right', toolbar: '#bar_action'}
+                        ]],
+                        d: {
+                            url: '{{ url_for('user.user_list') }}',
+                            where: d || $('#frm_search').serializeJson()
+                        }
+                    };
+                    $.autoTbl(cfg);
+                },
+                // 授权
+                authorize: function (d) {
+                    form.val('frm_authorize', d);
+                    $('#f_role').data('fvalue', d.role);
+                    layer.open({
+                        title: '用户授权',
+                        type: 1,
+                        content: $('#div_authorize'),
+                        success: function (layero, index) {
+                            form.on('submit(btn_authorize_save)', function (d) {
+                                var btn = $(this);
+                                $.mkAjax(d.field, '{{ url_for('user.user_authorize') }}',
+                                    '用户授权', function (r) {
+                                        BTN_SEARCH.trigger('click');
+                                        index && layer.close(index);
+                                    }, btn);
+                                return false;
+                            });
+                            $('#btn_authorize_close').click(function () {
+                                index && layer.close(index);
+                            });
+                        }
+                    });
+                    return false;
+                },
+                // 禁用
+                deny: function (d) {
+                    let txt = '确定禁用用户（' + d.realname + '）？';
+                    layer.confirm(txt, {icon: 3, title: '请仔细核对'}, function () {
+                        $.mkAjax({job_number: d.job_number}, '{{ url_for('user.user_deny') }}',
+                            '禁用用户', function (r) {
+                                BTN_SEARCH.trigger('click');
+                            });
+                    });
+                    return false;
+                },
+                // 弹出层大小
+                get_pop_area: function () {
+                    let w = $(window).width();
+                    let h = $(window).height();
+                    w = w > 880 ? 880 : (w - 20)
+                    h = h > 600 ? 600 : h
+                    return [w, h]
+                }
+            };
+
+            FN.tb_main();
+
+            // 下拉列表
+            $.fselect('f_role');
+
+            // 查询
+            form.on('submit(btn_search)', function (data) {
+                FN.tb_main(data.field);
+                return false;
+            });
+
+            table.on('tool(tbl_main)', function (obj) {
+                let data = obj.data;
+                switch (obj.event) {
+                    case 'authorize':
+                        FN.authorize(data);
+                        break;
+                    case 'deny':
+                        FN.deny(data);
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
+    </script>
+{% endblock %}

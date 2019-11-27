@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xml:lang="zh-CN" class="full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global-lite.css') }}">
+    <title>{% block title %}{% endblock %} - FF.PyAdmin</title>
+    {% block css %}{% endblock %}
+</head>
+<body>
+<div class="layui-header header">
+    <div class="layui-fluid">
+        <a href="{{ url_for('web.web_index') }}" class="logo">主页</a>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="{{ url_for('bgp.bgp_index') }}" class="icon-md"><i
+                        class="ficon icon-xitongguanli"></i>BGP 管理</a>
+            </li>
+            <li class="layui-nav-item">
+                <a href="{{ url_for('asn.asn_index') }}" class="icon-md"><i
+                        class="ficon icon-iconset0401"></i>ASN 管理</a>
+            </li>
+            {% if is_can('user.user_index') %}
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('user.user_index') }}" class="icon-md"><i
+                            class="ficon icon-wode1"></i>用户管理</a>
+                </li>
+            {% endif %}
+            <li class="layui-nav-item">
+                <a href="{{ url_for('log.log_index') }}" class="icon-md"><i
+                        class="ficon icon-dingdan"></i>日志查询</a>
+            </li>
+            <li class="layui-nav-item">
+                <a href="javascript:void(0);"><i class="ficon icon-favor_fill_light"></i> 常用工具</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="https://github.com/fufuok">GitHub</a></dd>
+                    <dd><a target="_blank" href="https://gitee.com/fufuok">Gitee</a></dd>
+                    <dd><a target="_blank" href="https://www.ipip.net/ip.html">IPIP</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item">
+                <a href="javascript:void(0);">
+                    <img src="{{ url_for('static', filename='images/photo.jpg') }}" class="layui-nav-img" alt="">
+                    <span class="layui-hide-xs">{{ current_user.realname }}</span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="{{ url_for('web.web_login') }}">重新登录</a></dd>
+                    <dd>
+                        <hr>
+                    </dd>
+                    <dd><a href="{{ url_for('web.web_logout') }}">安全退出</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="layui-fluid mt15 layui-anim layui-anim-upbit">
+    <div class="layui-row panel body-box">
+        {% block body %}
+            <div class="panel">
+                <div class="panel-title">
+                    <h3 class="fleft">标题</h3>
+                </div>
+                <div class="panel-box pl25">
+                    内容
+                </div>
+            </div>
+        {% endblock %}
+    </div>
+</div>
+<script src="{{ url_for('static', filename='layui/layui.all.js') }}?v2.5.5"></script>
+<script src="{{ url_for('static', filename='js/jq.global.js') }}"></script>
+{% block js %}{% endblock %}
+</body>
+</html>

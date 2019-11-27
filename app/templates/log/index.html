@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}日志查询{% endblock %}
+{% block body %}
+    <div class="panel">
+        <div class="panel-title">
+            <h3 class="fleft">
+                日志查询
+                <span class="layui-badge-rim c-green font-iosevka">
+                    用户操作日志, BGP 获取/更新日志等
+                </span>
+            </h3>
+            <div class="fright">
+                <form id="frm_search" class="layui-form" lay-filter="frm_search">
+                    <div class="layui-inline">
+                        <label>谁：</label>
+                        <div class="layui-input-inline">
+                            <input name="log_operator" type="text" class="layui-input txt-focus" value=""
+                                   placeholder="姓名/BGP-IP">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label>干了啥：</label>
+                        <div class="layui-input-inline">
+                            <input name="log_action" type="text" class="layui-input txt-focus" value=""
+                                   placeholder="如: user.user.deny">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label>结果：</label>
+                        <div class="layui-input-inline">
+                            <input name="log_status" type="text" class="layui-input input-xs txt-focus" value=""
+                                   placeholder="1 或 0">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div>
+                            <button class="layui-btn btn-default" lay-submit="" lay-filter="btn_search"
+                                    id="btn_search" type="submit">
+                                <i class="ficon icon-search_list"></i>日志查询
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel-box pl25">
+            <div id="grid_main">
+                <table id="tbl_main" lay-filter="tbl_main"></table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script>
+        $(function () {
+            const BTN_SEARCH = $('#btn_search');
+            let FN = {
+                // 主表
+                tb_main: function (d) {
+                    let height = $('#grid_main').height();
+                    height < 222 && (height = 345);
+                    let cfg = {
+                        elem: '#tbl_main',
+                        even: true,
+                        height: height,
+                        page: true,
+                        dataPage: true,
+                        limit: 60,
+                        loading: true,
+                        cols: [[
+                            {type: 'numbers'},
+                            {field: 'log_time', title: '操作时间', sort: true},
+                            {field: 'log_operator', title: '操作者', sort: true},
+                            {field: 'log_action', title: '具体操作', sort: true},
+                            {
+                                field: 'log_status', title: '操作结果', sort: true, templet: function (d) {
+                                    return d.log_status === 1
+                                        ? '<i class="ficon icon-roundcheck text-success"></i>'
+                                        : '<i class="ficon icon-roundclose text-brown"></i>'
+                                }
+                            },
+                        ]],
+                        d: {
+                            url: '{{ url_for('log.log_list') }}',
+                            where: d || $('#frm_search').serializeJson()
+                        }
+                    };
+                    $.autoTbl(cfg);
+                },
+                // 弹出层大小
+                get_pop_area: function () {
+                    let w = $(window).width();
+                    let h = $(window).height();
+                    w = w > 880 ? 880 : (w - 20)
+                    h = h > 600 ? 600 : h
+                    return [w, h]
+                }
+            };
+
+            FN.tb_main();
+
+            // 查询
+            form.on('submit(btn_search)', function (data) {
+                FN.tb_main(data.field);
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block title %}权限管理{% endblock %}
+{% block body %}
+    <div class="panel">
+        <div class="panel-title">
+            <h3 class="fleft">
+                权限管理
+                <span class="layui-badge-rim c-green font-iosevka">
+                    权限组及权限明细管理
+                </span>
+            </h3>
+            <!--div class="fright">
+                <form id="frm_search" class="layui-form" lay-filter="frm_search">
+                    <div class="layui-inline">
+                        <label>权限名称：</label>
+                        <div class="layui-input-inline">
+                            <input name="job_number" type="text" class="layui-input txt-focus" value=""
+                                   placeholder="">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div>
+                            <button class="layui-btn btn-default" lay-submit="" lay-filter="btn_search"
+                                    id="btn_search" type="submit">
+                                <i class="ficon icon-search_list"></i>权限查询
+                            </button>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div>
+                            <button id="f_btn_add" class="layui-btn btn-success" type="button"><i
+                                    class="ficon icon-jia"></i>新增权限组
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div-->
+        </div>
+        <div class="panel-box pl25">
+            <div id="grid_main">
+                <table id="tbl_main" lay-filter="tbl_main"></table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <div id="div_authorize" class="layer-pop">
+        <form class="layui-form layui-form-pane" lay-filter="frm_authorize" id="frm_authorize">
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名：</label>
+                <div class="layui-input-block">
+                    <input name="realname" type="text" class="layui-input" value=""
+                           readonly="readonly" lay-verify="required" lay-vertype="tips">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">手机：</label>
+                <div class="layui-input-block">
+                    <input name="mobile" type="text" class="layui-input" value=""
+                           lay-verify="required" lay-vertype="tips">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">权限：</label>
+                <div class="layui-input-block">
+                    <select id="f_role" name="role" title="" lay-filter="f_role" lay-search
+                            data-fjson="{{ url_for('role.role_data') }}" data-fx="role"></select>
+                </div>
+            </div>
+            <div class="center">
+                <button class="layui-btn layui-btn-sm btn-primary" type="submit" lay-submit
+                        lay-filter="btn_authorize_save">
+                    <i class="ficon icon-gou"></i>保 存
+                </button>
+                <button class="layui-btn layui-btn-sm btn-warning" id="btn_authorize_close" type="button">
+                    <i class="ficon icon-cha"></i>取 消
+                </button>
+            </div>
+        </form>
+    </div>
+    <script type="text/html" id="bar_action">
+        <div class="layui-btn-group">
+            {% if is_can('user.user_authorize') %}
+                <a class="layui-btn layui-btn-sm btn-primary" lay-event="detail">明细权限</a>
+                <a class="layui-btn layui-btn-sm btn-brown" lay-event="delete">删除</a>
+            {% endif %}
+        </div>
+    </script>
+    <script>
+        $(function () {
+            const BTN_SEARCH = $('#btn_search');
+            let FN = {
+                // 主表
+                tb_main: function (d) {
+                    let height = $('#grid_main').height();
+                    height < 222 && (height = 345);
+                    let cfg = {
+                        elem: '#tbl_main',
+                        even: true,
+                        height: height,
+                        page: true,
+                        dataPage: true,
+                        limit: 60,
+                        loading: true,
+                        cols: [[
+                            {type: 'numbers'},
+                            {field: 'role', title: '权限标识', sort: true},
+                            {field: 'role_name', title: '权限名称'}
+                        ]],
+                        d: {
+                            url: '{{ url_for('role.role_list') }}',
+                            where: d || $('#frm_search').serializeJson()
+                        }
+                    };
+                    $.autoTbl(cfg);
+                },
+                // 新增权限组
+                add: function () {
+                    layer.msg('暂未开放')
+                },
+                // 权限明细
+                detail: function (d) {
+                    layer.msg('暂未开放');
+                },
+                // 删除
+                delete: function (d) {
+                    layer.msg('暂未开放');
+                    return false;
+                },
+                // 弹出层大小
+                get_pop_area: function () {
+                    let w = $(window).width();
+                    let h = $(window).height();
+                    w = w > 880 ? 880 : (w - 20)
+                    h = h > 600 ? 600 : h
+                    return [w, h]
+                },
+                // 清除表单
+                reset_form: function (id, bgp) {
+                    $(id)[0].reset();
+                    $('.pop-bgp-value').val(bgp);
+                    $('.pop-bgp-text').text(bgp);
+                    form.render()
+                }
+            };
+
+            FN.tb_main();
+
+            // 查询
+            form.on('submit(btn_search)', function (data) {
+                FN.tb_main(data.field);
+                return false;
+            });
+
+            // 新增
+            $('#f_btn_add').click(function () {
+                FN.add();
+            });
+
+            table.on('tool(tbl_main)', function (obj) {
+                let data = obj.data;
+                switch (obj.event) {
+                    case 'detail':
+                        FN.detail(data);
+                        break;
+                    case 'delete':
+                        FN.delete(data);
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
+    </script>
+{% endblock %}

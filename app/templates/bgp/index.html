@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}BGP 管理{% endblock %}
+{% block body %}
+    <div class="panel">
+        <div class="panel-title">
+            <h3 class="fleft">
+                BGP 管理
+                <span class="layui-badge-rim c-green font-iosevka">
+                    BGP IP 及关联 ASN 管理
+                </span>
+            </h3>
+            <div class="fright">
+                <form id="frm_search" class="layui-form" lay-filter="frm_search">
+                    <div class="layui-inline">
+                        <label>BGP IP：</label>
+                        <div class="layui-input-inline">
+                            <input name="bgp_ip" type="text" class="layui-input txt-focus" value=""
+                                   placeholder="BGP 管理 IP">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label>ASN：</label>
+                        <div class="layui-input-inline">
+                            <input name="bgp_asn" type="text" class="layui-input txt-focus" value=""
+                                   placeholder="关联的 AS 号">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div>
+                            <button class="layui-btn btn-default" lay-submit="" lay-filter="btn_search"
+                                    id="btn_search" type="submit">
+                                <i class="ficon icon-search_list"></i>BGP 查询
+                            </button>
+                        </div>
+                    </div>
+                    {% if is_can('bgp.bgp_add') %}
+                        <div class="layui-inline">
+                            <div>
+                                <button id="f_btn_add" class="layui-btn btn-success" type="button"><i
+                                        class="ficon icon-jia"></i>新增 BGP
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <div class="panel-box pl25">
+            <div id="grid_main">
+                <table id="tbl_main" lay-filter="tbl_main"></table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <div id="div_add" class="layer-pop">
+        <form class="layui-form layui-form-pane" lay-filter="frm_add" id="frm_add">
+            <div class="layui-form-item">
+                <label class="layui-form-label">BGP IP：</label>
+                <div class="layui-input-block">
+                    <input name="bgp_ip" type="text" class="layui-input txt-focus" value=""
+                           placeholder="BGP 管理 IP" lay-verify="required" lay-vertype="tips">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">所属 ASN：</label>
+                <div class="layui-input-block">
+                    <input name="bgp_asn" type="text" class="layui-input txt-focus" value=""
+                           placeholder="BGP 关联的 ASN" lay-verify="required" lay-vertype="tips">
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">BGP 描述信息：</label>
+                <div class="layui-input-block">
+                    <textarea name="bgp_desc" class="layui-textarea txt-focus"
+                              placeholder="描述内容换行等格式无效" lay-verify="required" lay-vertype="tips"></textarea>
+                </div>
+            </div>
+            <div class="center">
+                <button class="layui-btn layui-btn-sm btn-primary" type="submit" lay-submit lay-filter="btn_add_save">
+                    <i class="ficon icon-gou"></i>保 存
+                </button>
+                <button class="layui-btn layui-btn-sm btn-warning" id="btn_add_close" type="button">
+                    <i class="ficon icon-cha"></i>取 消
+                </button>
+            </div>
+        </form>
+    </div>
+    <script type="text/html" id="bar_action">
+        <div class="layui-btn-group">
+            {% if is_can('bgp.bgp_delete') %}
+                <a class="layui-btn layui-btn-sm btn-brown" lay-event="delete">删除</a>
+            {% endif %}
+        </div>
+    </script>
+    <script>
+        $(function () {
+            const BTN_SEARCH = $('#btn_search');
+            const FRM_SEARCH = $('#frm_search');
+            let FN = {
+                // 主表
+                tb_main: function (d, s) {
+                    let height = $('#grid_main').height();
+                    height < 222 && (height = 345);
+                    let cfg = {
+                        id: 'tbl_main',
+                        elem: '#tbl_main',
+                        even: true,
+                        height: height,
+                        page: true,
+                        dataPage: true,
+                        limit: 60,
+                        loading: true,
+                        initSort: s || {field: 'bgp_update', type: 'asc'},
+                        autoSort: false,
+                        cols: [[
+                            {type: 'numbers'},
+                            {field: 'bgp_ip', title: 'BGP 管理 IP', width: 140, sort: true},
+                            {field: 'bgp_asn', title: 'ASN', width: 100, sort: true},
+                            {field: 'bgp_update', title: '最后更新', width: 170, sort: true},
+                            {field: 'bgp_desc', title: 'BGP 描述'},
+                            {title: '操作', width: 100, align: 'center', fixed: 'right', toolbar: '#bar_action'}
+                        ]],
+                        d: {
+                            url: '{{ url_for('bgp.bgp_list') }}',
+                            where: d || FRM_SEARCH.serializeJson()
+                        }
+                    };
+                    $.autoTbl(cfg);
+                },
+                // 新增
+                add: function () {
+                    FN.reset_form('#frm_add');
+                    layer.open({
+                        title: '新增 BGP',
+                        type: 1,
+                        content: $('#div_add'),
+                        success: function (layero, index) {
+                            form.on('submit(btn_add_save)', function (d) {
+                                var btn = $(this);
+                                $.mkAjax(d.field, '{{ url_for('bgp.bgp_add') }}',
+                                    '新增 BGP', function (r) {
+                                        BTN_SEARCH.trigger('click');
+                                        index && layer.close(index);
+                                    }, btn);
+                                return false;
+                            });
+                            $('#btn_add_close').click(function () {
+                                index && layer.close(index);
+                            });
+                        }
+                    });
+                    return false;
+                },
+                // 删除
+                delete: function (d) {
+                    let txt = '确定删除 BGP :<br><b>' + d.bgp_ip + '</b>';
+                    layer.confirm(txt, {icon: 3, title: '请仔细核对'}, function () {
+                        $.mkAjax({bgp_ip: d.bgp_ip}, '{{ url_for('bgp.bgp_delete') }}',
+                            '确定删除 BGP ', function (r) {
+                                BTN_SEARCH.trigger('click');
+                            });
+                    });
+                    return false;
+                },
+                // 弹出层大小
+                get_pop_area: function () {
+                    let w = $(window).width();
+                    let h = $(window).height();
+                    w = w > 880 ? 880 : (w - 20)
+                    h = h > 600 ? 600 : h
+                    return [w, h]
+                },
+                // 清除表单
+                reset_form: function (id) {
+                    if ($(id).length) {
+                        $(id)[0].reset();
+                        form.render()
+                    }
+                }
+            };
+
+            FN.tb_main();
+
+            // 删除
+            table.on('tool(tbl_main)', function (obj) {
+                obj.event === 'delete' && FN.delete(obj.data);
+            });
+
+            // 查询
+            form.on('submit(btn_search)', function (data) {
+                FN.tb_main(data.field);
+                return false;
+            });
+
+            // 新增
+            $('#f_btn_add').on('click', function () {
+                FN.add();
+            });
+
+            // 排序
+            table.on('sort(tbl_main)', function (obj) {
+                let where = FRM_SEARCH.serializeJson();
+                where['order__field'] = obj.field;
+                where['order__type'] = obj.type;
+                FN.tb_main(where, obj);
+            });
+        });
+    </script>
+{% endblock %}
