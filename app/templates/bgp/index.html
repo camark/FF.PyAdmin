@@ -145,7 +145,7 @@
                                     }, btn);
                                 return false;
                             });
-                            $('#btn_add_close').click(function () {
+                            $('#btn_add_close').on('click', function () {
                                 index && layer.close(index);
                             });
                         }
@@ -167,15 +167,15 @@
                 get_pop_area: function () {
                     let w = $(window).width();
                     let h = $(window).height();
-                    w = w > 880 ? 880 : (w - 20)
-                    h = h > 600 ? 600 : h
-                    return [w, h]
+                    w = w > 880 ? 880 : (w - 20);
+                    h = h > 600 ? 600 : h;
+                    return [w, h];
                 },
                 // 清除表单
-                reset_form: function (id) {
-                    if ($(id).length) {
-                        $(id)[0].reset();
-                        form.render()
+                reset_form: function (dom) {
+                    if ($(dom).length) {
+                        $(dom)[0].reset();
+                        form.render();
                     }
                 }
             };

@@ -7,11 +7,12 @@
     :author: Fufu, 2019/9/17
 """
 from flask import Blueprint, render_template
+from flask_login import current_user
 
 from ..services.user import UserCharge
 from ..services.auth import permission_required
 from ..forms.user import UserAuthorizeForm, UserJobNumberForm, UserSearchForm
-from ..libs.exceptions import APISuccess
+from ..libs.exceptions import APISuccess, APIFailure
 
 bp_user = Blueprint('user', __name__, url_prefix='/user')
 
@@ -42,5 +43,7 @@ def user_authorize():
 @permission_required
 def user_deny():
     form = UserJobNumberForm().check()
+    if current_user.job_number == form.job_number.data:
+        return APIFailure('不能禁用自己的账号')
     UserCharge.deny(form.job_number.data)
     return APISuccess()
