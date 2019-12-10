@@ -33,7 +33,7 @@ class JSONEncoder(_JSONEncoder):
 
         e.g.::
 
-            # {job_number: 114, mobile: "13880010809", last_login: "2019-09-10 09:04:59", status: 1}
+            # {job_number: 114, mobile: "13880000009", last_login: "2019-09-10 09:04:59", status: 1}
             return jsonify(TBUser.query.get(114).hide_keys('realname', 'role'))
 
         :param o:
@@ -57,7 +57,7 @@ class Flask(_Flask):
 
         e.g.::
 
-            # {job_number: 114, mobile: "13880010809", last_login: "2019-09-10 09:04:59", status: 1}
+            # {job_number: 114, mobile: "13880000009", last_login: "2019-09-10 09:04:59", status: 1}
             return TBUser.query.get(114).hide_keys('realname', 'role')
 
         :param rv:

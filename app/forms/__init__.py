@@ -37,7 +37,30 @@ class BaseForm(FlaskForm):
             return ZHTranslations()
 
     def check(self):
-        """验证失败时抛出异常"""
+        """
+        验证失败时抛出异常
+
+        e.g.::
+
+            # for POST, PUT, PATCH, DELETE: application/x-www-form-urlencoded, multipart/form-data
+            # for JSON (POST, PUT, PATCH, DELETE): application/json
+            # formdata=_Auto, likeness: validate_on_submit()
+            # wrap_formdata: request.files, request.form, request.get_json()
+            form = ASNAddForm().check()
+
+            # for GET
+            # ?ff=ok&asn=777
+            form = ASNSearchForm(request.args).check()
+            print(form.asn.data)
+
+            # for custom data: MultiDict({'asn': 777})
+            from werkzeug.datastructures import MultiDict
+            my_data = MultiDict([('asn', 777)])
+            form = ASNSearchForm(my_data).check()
+            print(form.asn.data)
+
+        :return:
+        """
         valid = super(BaseForm, self).validate()
         if not valid:
             # form errors
@@ -105,7 +128,8 @@ class PositiveInteger:
         """
         data = field.data.strip() if isinstance(field.data, str) else field.data
         fdata = get_int(data)
-        if not (data == '' and self.allow_none) and (fdata is None or fdata < 1 and not (self.allow_0 and fdata == 0)):
+        if not ((data == '' or data is None) and self.allow_none) and (
+                fdata is None or fdata < 1 and not (self.allow_0 and fdata == 0)):
             if self.message is None:
                 self.message = '{}错误(非正整数{})'.format(field.label.text, '或0' if self.allow_0 else '')
             raise StopValidation(self.message)
